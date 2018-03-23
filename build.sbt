@@ -12,15 +12,15 @@ val derbyVersion = "10.11.1.1"
 
 lazy val root = (project in file(".")).
   settings(
-    name := "crypto_currency_analysis",
+    name := "crypto_currencies_analytics",
     scalaVersion := scalaLangVersion,
     javacOptions ++= Seq("-source", jdkVersion, "-target", jdkVersion, "-Xlint"),
     libraryDependencies ++= Seq(
-      "org.apache.spark" %% "spark-core" % sparkVersion % "provided",
-      "org.apache.spark" %% "spark-hive" % sparkVersion % "provided",
-      "org.apache.spark" %% "spark-sql" % sparkVersion % "provided",
-      "org.apache.spark" %% "spark-mllib" % sparkVersion % "provided",
-      "org.apache.spark" %% "spark-streaming" % sparkVersion % "provided",
+      "org.apache.spark" %% "spark-core" % sparkVersion,// % "provided",
+      "org.apache.spark" %% "spark-hive" % sparkVersion,// % "provided",
+      "org.apache.spark" %% "spark-sql" % sparkVersion,// % "provided",
+      "org.apache.spark" %% "spark-mllib" % sparkVersion,// % "provided",
+      "org.apache.spark" %% "spark-streaming" % sparkVersion,// % "provided",
       //"org.apache.spark" % "spark-streaming-twitter_2.11" % "1.5.2"
       "org.apache.bahir" % "spark-streaming-twitter_2.11" % "2.0.1",
       "edu.stanford.nlp" % "stanford-corenlp" % "3.5.1",

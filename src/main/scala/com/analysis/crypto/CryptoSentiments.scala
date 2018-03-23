@@ -35,20 +35,27 @@ object CryptoSentiments {
     setupLogging()
 
     //filter based on Crpoto keywords
-    val filter = Array("BitCoin", "Ripple", "crypto", "cardano", "IOTA", "litcoin", "bit", "cryptoCoin")
+    val filterWords = Array("BitCoin", "Ripple", "crypto", "cardano", "IOTA", "litcoin", "cryptoCoin")
 
     // Create a DStream from Twitter using our streaming context
-    val tweets = TwitterUtils.createStream(ssc, None, filter)
+    val tweets = TwitterUtils.createStream(ssc, None, filterWords)
       .filter(_.getLang == "en")
       .filter(t=> t.toString.length > 0)
 
         val statuses = tweets.map(
           tw => (
+           // tw.getText().contains(filterWords.toList),
+            //if (filterWords.toList.exists(words => words.contains(tw.getText))) filterWords else null,
+            //tw.getText.exists(filter.toList),
             tw.getText(),
             SentimentAnalysisUtils.detectSentiment(tw.getText()).toString))
 
+    statuses.print()
+
+
+
         //Print the status
-        statuses.print
+    //    statuses.print
 
 //    val tweetsMaaped = tweets.foreachRDD { rdd =>
 //      rdd.map(t => {
@@ -75,7 +82,7 @@ object CryptoSentiments {
 //
 //    //Print the status
 //    statuses.print
-//
+
 //    statuses.foreachRDD{ rdd =>
 ////      rdd.map(t =>{
 ////        Map(
@@ -86,8 +93,8 @@ object CryptoSentiments {
 ////      })
 //      val spark = SparkSession.builder.config(rdd.sparkContext.getConf).enableHiveSupport().getOrCreate()
 //      import spark.implicits._
-//      val result = rdd.toDF("Status", "Sentiment")
-////      result.write.mode("append").saveAsTable("crypto_sentiments")
+//      val result = rdd.toDF("hashtag", "status", "sentiment")
+//     // result.write.mode("append").saveAsTable("crypto_sentiments")
 //      result.show()
 //
 //    }

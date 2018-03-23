@@ -90,7 +90,8 @@ object PopularHashtags {
       import spark.implicits._
       // Convert RDD[String] to DataFrame
       val popularHashtagsDataFrame = rdd.toDF("popular_hashtag_name", "counts")
-      popularHashtagsDataFrame.write.mode("overwrite").saveAsTable("popular_hashtags")
+//      popularHashtagsDataFrame.show()
+      popularHashtagsDataFrame.write.mode("append").saveAsTable("popular_hashtags")
     }
 
     // Set a checkpoint directory, and kick it all off

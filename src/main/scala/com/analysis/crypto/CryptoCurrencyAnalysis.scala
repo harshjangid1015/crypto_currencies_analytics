@@ -22,10 +22,10 @@ object CryptoCurrencyAnalysis {
 
 //    PopularHashtags.processPopularHashtags(ssc)
 
-      CryptoSentiments.processCryptoSentiments(ssc)
+    CryptoSentiments.processCryptoSentiments(ssc)
 
 
-//    SampleSentiments.processCryptoSentiments(ssc)
+//  SampleSentiments.processCryptoSentiments(ssc)
 
   }
 
