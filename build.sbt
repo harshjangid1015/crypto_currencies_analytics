@@ -22,7 +22,10 @@ lazy val root = (project in file(".")).
       "org.apache.spark" %% "spark-mllib" % sparkVersion % "provided",
       "org.apache.spark" %% "spark-streaming" % sparkVersion % "provided",
       //"org.apache.spark" % "spark-streaming-twitter_2.11" % "1.5.2"
-      "org.apache.bahir" % "spark-streaming-twitter_2.11" % "2.0.1"
+      "org.apache.bahir" % "spark-streaming-twitter_2.11" % "2.0.1",
+      "edu.stanford.nlp" % "stanford-corenlp" % "3.5.1",
+      "edu.stanford.nlp" % "stanford-corenlp" % "3.5.1" classifier "models"
+
     ),
     assemblyJarName in assembly := s"${name.value}-${version.value}.jar",
     // don't need the scala language libraries since they're on the cluster

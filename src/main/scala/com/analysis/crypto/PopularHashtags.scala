@@ -32,6 +32,7 @@ object PopularHashtags {
 //  }
 //
 
+  /** Configures Twitter service credentials using Constants.scala file*/
   def setupTwitter() = {
 
         System.setProperty("twitter4j.oauth.consumerKey", Constants.consumerKey)
@@ -40,7 +41,6 @@ object PopularHashtags {
         System.setProperty("twitter4j.oauth.accessTokenSecret", Constants.accessTokenSecret)
 
   }
-
 
   /** Our main function where the action happens */
   def processPopularHashtags (ssc : StreamingContext) {
