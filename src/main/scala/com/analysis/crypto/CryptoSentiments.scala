@@ -5,40 +5,18 @@ import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.streaming.twitter.TwitterUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
-
 object CryptoSentiments {
-
-
-  /** Makes sure only ERROR messages get logged to avoid log spam. */
-  def setupLogging() = {
-    import org.apache.log4j.{Level, Logger}
-    val rootLogger = Logger.getRootLogger()
-    rootLogger.setLevel(Level.OFF)
-  }
-
-  /** Configures Twitter service credentials using Constants.scala file*/
-  def setupTwitter() = {
-
-    System.setProperty("twitter4j.oauth.consumerKey", Constants.consumerKey)
-    System.setProperty("twitter4j.oauth.consumerSecret", Constants.consumerSecret)
-    System.setProperty("twitter4j.oauth.accessToken", Constants.accessToken)
-    System.setProperty("twitter4j.oauth.accessTokenSecret", Constants.accessTokenSecret)
-
-  }
 
   /** Our main function where the action happens */
   def processCryptoSentiments (ssc : StreamingContext){
     //setting up twitter
-    setupTwitter()
+    Util.setupTwitter()
 
     // Get rid of log spam (should be called after the context is set up)
-    setupLogging()
-
-    //filter based on Crpoto keywords
-    val filterWords = Array("BitCoin", "Ripple", "crypto", "cardano", "IOTA", "litcoin", "cryptoCoin")
+    Util.setupLogging()
 
     // Create a DStream from Twitter using our streaming context
-    val tweets = TwitterUtils.createStream(ssc, None, filterWords)
+    val tweets = TwitterUtils.createStream(ssc, None, Constants.filterWords)
       .filter(_.getLang == "en")
       .filter(t=> t.toString.length > 0)
 
@@ -47,10 +25,20 @@ object CryptoSentiments {
            // tw.getText().contains(filterWords.toList),
             //if (filterWords.toList.exists(words => words.contains(tw.getText))) filterWords else null,
             //tw.getText.exists(filter.toList),
-            tw.getText(),
-            SentimentAnalysisUtils.detectSentiment(tw.getText()).toString))
+            extractWords(tw.getText(), Constants.filterWords) ,
+            SentimentAnalysisUtils.detectSentiment(tw.getText()).toString,
+//            tw.getRetweetCount
+//            Option(tw.getGeoLocation).map(geo => { s"${geo.getLatitude},${geo.getLongitude}" })
+//            tw.getHashtagEntities.map(_.getText)
+            tw.getUser.getScreenName,
+            tw.getUser.getLocation,
+            tw.getText
 
-    statuses.print()
+          ))
+
+   // statuses.count().print()
+  //  statuses.print()
+
 
 
 
@@ -83,26 +71,35 @@ object CryptoSentiments {
 //    //Print the status
 //    statuses.print
 
-//    statuses.foreachRDD{ rdd =>
-////      rdd.map(t =>{
-////        Map(
-////          "Status" -> t.,
-////          "Sentiment" -> SentimentAnalysisUtils.detectSentiment(t.toString()).toString
-////        )
-////
-////      })
-//      val spark = SparkSession.builder.config(rdd.sparkContext.getConf).enableHiveSupport().getOrCreate()
-//      import spark.implicits._
-//      val result = rdd.toDF("hashtag", "status", "sentiment")
-//     // result.write.mode("append").saveAsTable("crypto_sentiments")
-//      result.show()
-//
-//    }
+    statuses.foreachRDD{ rdd =>
+
+      //val spark = SparkSession.builder.config(rdd.sparkContext.getConf).getOrCreate()//.enableHiveSupport().getOrCreate()
+    val spark = SparkSession.builder.config(rdd.sparkContext.getConf).enableHiveSupport().getOrCreate()
+      import spark.implicits._
+      val result = rdd.toDF("key_words", "sentiment", "user_name", "location", "tweet")
+//        val filterResult = result.filter("key_words is not null")
+      result.write.mode("append").insertInto("crypto_sentiments")//.saveAsTable("crypto_sentiments")
+//      filterResult.show()
+
+    }
+
+
+
+
     ssc.checkpoint("checkpoint")
     ssc.start()
     ssc.awaitTermination()
 
 
+  }
+  def extractWords (tweet : String, wordArray: Array[String]): String = {
+     //val tweet= "I love you bitcoin ripple ripple1 cypto1 #crypto"
+    val splittedTweet = tweet.split(" ").toList.map(x => x.toUpperCase).map(_.replaceAll("#", ""))
+    //val wordArray = Array("BitCoin", "Ripple", "crypto", "cardano", "IOTA", "litcoin", "cryptoCoin")
+    val wordsList = wordArray.toList.map(_.toUpperCase)
+    val s = wordsList.intersect(splittedTweet)
+   // print("HOLA "+s.toString())  //mkString(", "))
+    s.mkString(", ")
   }
 
 

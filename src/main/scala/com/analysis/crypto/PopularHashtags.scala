@@ -13,34 +13,6 @@ import org.apache.spark.streaming.twitter._
   */
 object PopularHashtags {
 
-  /** Makes sure only ERROR messages get logged to avoid log spam. */
-  def setupLogging() = {
-    import org.apache.log4j.{Level, Logger}
-    val rootLogger = Logger.getRootLogger()
-    rootLogger.setLevel(Level.OFF)
-  }
-
-//  /** Configures Twitter service credentials using twiter.txt in the main workspace directory */
-//  def setupTwitter(twitterCredentialsPath: String) = {
-//    import scala.io.Source
-//    for (line <- Source.fromFile(twitterCredentialsPath).getLines) {
-//      val fields = line.split(" ")
-//      if (fields.length == 2) {
-//        System.setProperty("twitter4j.oauth." + fields(0), fields(1))
-//      }
-//    }
-//  }
-//
-
-  /** Configures Twitter service credentials using Constants.scala file*/
-  def setupTwitter() = {
-
-        System.setProperty("twitter4j.oauth.consumerKey", Constants.consumerKey)
-        System.setProperty("twitter4j.oauth.consumerSecret", Constants.consumerSecret)
-        System.setProperty("twitter4j.oauth.accessToken", Constants.accessToken)
-        System.setProperty("twitter4j.oauth.accessTokenSecret", Constants.accessTokenSecret)
-
-  }
 
   /** Our main function where the action happens */
   def processPopularHashtags (ssc : StreamingContext) {
@@ -48,19 +20,17 @@ object PopularHashtags {
 //    val CHECKPOINT_DIR = checkpointDirName
 
     // Configure Twitter credentials using twitter.txt
-    setupTwitter()
+    Util.setupTwitter()
 
     // Set up a Spark streaming context named "PopularHashtags" that runs locally using
     // all CPU cores and one-second batches of data
    // val ssc = new StreamingContext("local[*]", "PopularHashtags", Seconds(1))
 
     // Get rid of log spam (should be called after the context is set up)
-    setupLogging()
+    Util.setupLogging()
 
-    // filter based on Crypto keywords
-    val filters = Array("BitCoin", "Ripple", "crypto", "cardano", "IOTA", "litcoin", "bit", "cryptoCoin")
     // Create a DStream from Twitter using our streaming context
-    val tweets = TwitterUtils.createStream(ssc, None, filters)
+    val tweets = TwitterUtils.createStream(ssc, None, Constants.filterWords)
 
     // Now extract the text of each status update into DStreams using map()
     val statuses = tweets.map(status => status.getText())
