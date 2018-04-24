@@ -19,13 +19,14 @@ object CryptoSentiments {
     val tweets = TwitterUtils.createStream(ssc, None, Constants.filterWords)
       .filter(_.getLang == "en")
       .filter(t=> t.toString.length > 0)
+//      .filter(t=> (null != t.getGeoLocation))
 
         val statuses = tweets.map(
           tw => (
            // tw.getText().contains(filterWords.toList),
             //if (filterWords.toList.exists(words => words.contains(tw.getText))) filterWords else null,
             //tw.getText.exists(filter.toList),
-            extractWords(tw.getText(), Constants.filterWords) ,
+            extractWords(tw.getText(), Constants.filterWords),
             SentimentAnalysisUtils.detectSentiment(tw.getText()).toString,
 //            tw.getRetweetCount
 //            Option(tw.getGeoLocation).map(geo => { s"${geo.getLatitude},${geo.getLongitude}" })
@@ -33,11 +34,38 @@ object CryptoSentiments {
             tw.getUser.getScreenName,
             tw.getUser.getLocation,
             tw.getText
+//            tw.getGeoLocation.getLatitude,
+//            tw.getGeoLocation.getLongitude
+
+
+
 
           ))
 
    // statuses.count().print()
-  //  statuses.print()
+//    statuses.print()
+
+    val filStst = statuses.filter(t=> !(t._1.contains(","))).filter(t=> !(t._1.isEmpty))
+//    val filStst = statuses.filter(t=> t._1.length==1)
+
+    filStst.foreachRDD{ rdd =>
+//      val spark = SparkSession.builder.config(rdd.sparkContext.getConf).getOrCreate()
+      val spark = SparkSession.builder.config(rdd.sparkContext.getConf).enableHiveSupport().getOrCreate()
+      import spark.implicits._
+      val result = rdd.toDF("key_words", "sentiment", "user_name", "location", "tweet")
+      result.write.mode("append").insertInto("crypto_sentiments")//.saveAsTable("crypto_sentiments")
+
+
+//      result.show()
+    }
+
+
+//    statuses.foreachRDD{ rdd =>
+//      val spark = SparkSession.builder.config(rdd.sparkContext.getConf).getOrCreate()
+//      import spark.implicits._
+//      val result = rdd.toDF("key_words", "sentiment", "user_name", "location", "tweet")
+//      result.show()
+//    }
 
 
 
@@ -71,17 +99,18 @@ object CryptoSentiments {
 //    //Print the status
 //    statuses.print
 
-    statuses.foreachRDD{ rdd =>
-
-      //val spark = SparkSession.builder.config(rdd.sparkContext.getConf).getOrCreate()//.enableHiveSupport().getOrCreate()
-    val spark = SparkSession.builder.config(rdd.sparkContext.getConf).enableHiveSupport().getOrCreate()
-      import spark.implicits._
-      val result = rdd.toDF("key_words", "sentiment", "user_name", "location", "tweet")
-//        val filterResult = result.filter("key_words is not null")
-      result.write.mode("append").insertInto("crypto_sentiments")//.saveAsTable("crypto_sentiments")
-//      filterResult.show()
-
-    }
+//    statuses.foreachRDD{ rdd =>
+//
+////      val spark = SparkSession.builder.config(rdd.sparkContext.getConf).getOrCreate()//.enableHiveSupport().getOrCreate()
+//    val spark = SparkSession.builder.config(rdd.sparkContext.getConf).enableHiveSupport().getOrCreate()
+//      import spark.implicits._
+//      val result = rdd.toDF("key_words", "sentiment", "user_name", "location", "tweet", "geoLoc")
+////        val filterResult = result.filter("key_words is not null")
+//      result.write.mode("overwrite").insertInto("crypto_sentiments")//.saveAsTable("crypto_sentiments")
+////      filterResult.show()
+////      result.show()
+//
+//    }
 
 
 
@@ -99,8 +128,16 @@ object CryptoSentiments {
     val wordsList = wordArray.toList.map(_.toUpperCase)
     val s = wordsList.intersect(splittedTweet)
    // print("HOLA "+s.toString())  //mkString(", "))
+//    if (s.isEmpty){
+//
+//    }
+
     s.mkString(", ")
+//    s.mkString
+
   }
+
+
 
 
 }
